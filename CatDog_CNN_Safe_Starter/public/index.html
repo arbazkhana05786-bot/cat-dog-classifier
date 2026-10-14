@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PawsAI — Cat vs Dog Classifier</title>
+  <meta name="description" content="Upload any photo and our CNN instantly tells you whether it's a cat or a dog, with a confidence score." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Nav ─────────────────────────────────────────────────────────── -->
+  <nav id="navbar">
+    <div class="nav-brand">
+      <span class="brand-icon">🐾</span>
+      <span class="brand-text">PawsAI</span>
+    </div>
+    <div class="nav-links">
+      <a href="#hero"    class="nav-link">Home</a>
+      <a href="#upload"  class="nav-link">Classify</a>
+      <a href="#howworks" class="nav-link">How It Works</a>
+    </div>
+    <div id="model-badge" class="model-badge model-checking">
+      <span class="badge-dot"></span>
+      <span class="badge-text">Checking…</span>
+    </div>
+  </nav>
+
+  <!-- ── Hero ────────────────────────────────────────────────────────── -->
+  <section id="hero" class="hero">
+    <div class="hero-bg-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span>🧠 Deep Learning · CNN</span>
+      </div>
+      <h1 class="hero-title">
+        Cat or Dog?<br/>
+        <span class="gradient-text">Let AI Decide.</span>
+      </h1>
+      <p class="hero-sub">
+        Upload any photo and our Convolutional Neural Network will classify it
+        in milliseconds — with a confidence score.
+      </p>
+      <div class="hero-cta">
+        <a href="#upload" class="btn-primary" id="try-btn">Try it now →</a>
+        <a href="#howworks" class="btn-ghost">How it works</a>
+      </div>
+    </div>
+    <div class="hero-image-wrap">
+      <div class="hero-image-glow"></div>
+      <img src="hero.jpg" alt="Cat and dog sitting together" class="hero-img" id="hero-img" />
+    </div>
+  </section>
+
+  <!-- ── Stats ───────────────────────────────────────────────────────── -->
+  <section class="stats-strip">
+    <div class="stat">
+      <div class="stat-num">128×128</div>
+      <div class="stat-label">Input Resolution</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <div class="stat-num">4-Layer</div>
+      <div class="stat-label">Conv Architecture</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <div class="stat-num">Binary</div>
+      <div class="stat-label">Classification</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <div class="stat-num">Adam</div>
+      <div class="stat-label">Optimiser</div>
+    </div>
+  </section>
+
+  <!-- ── Upload / Predict ─────────────────────────────────────────────── -->
+  <section id="upload" class="upload-section">
+    <div class="section-header">
+      <h2>Upload an Image</h2>
+      <p>JPG, PNG or WebP · up to 10 MB</p>
+    </div>
+
+    <div class="upload-card" id="drop-zone">
+      <!-- Drop-zone state -->
+      <div class="dz-idle" id="dz-idle">
+        <div class="dz-icon">📁</div>
+        <p class="dz-title">Drag & drop an image here</p>
+        <p class="dz-sub">or click to browse files</p>
+        <label class="btn-primary" for="file-input" id="browse-label">
+          Choose File
+        </label>
+        <input type="file" id="file-input" accept="image/*" hidden />
+      </div>
+
+      <!-- Preview state -->
+      <div class="dz-preview" id="dz-preview" style="display:none">
+        <img id="preview-img" src="" alt="Preview" />
+        <button class="clear-btn" id="clear-btn" title="Remove image">✕</button>
+      </div>
+    </div>
+
+    <button class="btn-predict" id="predict-btn" disabled>
+      <span class="btn-label">Classify Image</span>
+      <span class="btn-spinner" id="spinner" style="display:none"></span>
+    </button>
+
+    <!-- ── Result card ────────────────────────────────────────────────── -->
+    <div class="result-card" id="result-card" style="display:none">
+      <div class="result-animal" id="result-animal"></div>
+      <div class="result-label" id="result-label"></div>
+      <div class="result-confidence" id="result-confidence-text"></div>
+      <div class="confidence-bar-wrap">
+        <div class="confidence-bar-track">
+          <div class="confidence-bar-fill" id="confidence-fill"></div>
+        </div>
+        <div class="confidence-bar-ends">
+          <span>🐱 Cat</span>
+          <span>🐶 Dog</span>
+        </div>
+      </div>
+      <div class="result-raw" id="result-raw"></div>
+      <button class="btn-ghost" id="try-again-btn" style="margin-top:1.5rem">
+        Try another image
+      </button>
+    </div>
+
+    <!-- Error card -->
+    <div class="error-card" id="error-card" style="display:none">
+      <div class="error-icon">⚠️</div>
+      <div class="error-msg" id="error-msg"></div>
+      <button class="btn-ghost" id="error-dismiss-btn">Dismiss</button>
+    </div>
+  </section>
+
+  <!-- ── How It Works ─────────────────────────────────────────────────── -->
+  <section id="howworks" class="how-section">
+    <div class="section-header">
+      <h2>How It Works</h2>
+      <p>A classic CNN pipeline, end-to-end</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon">🖼️</div>
+        <h3>Image Input</h3>
+        <p>Your image is resized to 128×128 pixels and normalised to [0, 1] pixel values.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon">🔬</div>
+        <h3>Feature Extraction</h3>
+        <p>Four Conv2D + BatchNorm + MaxPool blocks progressively extract edges, textures, and shapes.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon">🧮</div>
+        <h3>Classification</h3>
+        <p>A Dense layer with Dropout reduces to a single sigmoid neuron — 0 = cat, 1 = dog.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-icon">📊</div>
+        <h3>Confidence Score</h3>
+        <p>The raw sigmoid output is converted to a confidence percentage shown in the result.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Architecture ─────────────────────────────────────────────────── -->
+  <section class="arch-section">
+    <div class="section-header">
+      <h2>Model Architecture</h2>
+      <p>Trained from scratch on your dataset</p>
+    </div>
+    <div class="arch-table-wrap">
+      <table class="arch-table">
+        <thead>
+          <tr><th>Layer</th><th>Output Shape</th><th>Params</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Input</td><td>128 × 128 × 3</td><td>—</td></tr>
+          <tr><td>Rescaling + Augmentation</td><td>128 × 128 × 3</td><td>0</td></tr>
+          <tr><td>Conv2D (32) + BatchNorm</td><td>128 × 128 × 32</td><td>896</td></tr>
+          <tr><td>MaxPool2D → 64 × 64</td><td>64 × 64 × 32</td><td>—</td></tr>
+          <tr><td>Conv2D (64) + BatchNorm</td><td>64 × 64 × 64</td><td>18,496</td></tr>
+          <tr><td>MaxPool2D → 32 × 32</td><td>32 × 32 × 64</td><td>—</td></tr>
+          <tr><td>Conv2D (128) + BatchNorm</td><td>32 × 32 × 128</td><td>73,856</td></tr>
+          <tr><td>MaxPool2D → 16 × 16</td><td>16 × 16 × 128</td><td>—</td></tr>
+          <tr><td>Conv2D (256) + BatchNorm</td><td>16 × 16 × 256</td><td>295,168</td></tr>
+          <tr><td>GlobalAvgPool2D</td><td>256</td><td>—</td></tr>
+          <tr><td>Dense (256) + Dropout 0.5</td><td>256</td><td>65,792</td></tr>
+          <tr class="highlight-row"><td>Dense (1) Sigmoid</td><td>1</td><td>257</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Footer ───────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <span>🐾 PawsAI</span>
+    </div>
+    <p class="footer-note">
+      A deep learning project · CNN trained on your own data ·
+      Confidence scores reflect model output, not a factual guarantee.
+    </p>
+    <p class="footer-note">
+      Dataset: <a href="https://www.kaggle.com/c/dogs-vs-cats/data" target="_blank" rel="noopener">Kaggle Dogs vs Cats</a>
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

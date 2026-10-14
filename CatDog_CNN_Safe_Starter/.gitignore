@@ -1,0 +1,12 @@
+__pycache__/
+.venv/
+venv/
+*.pyc
+ml/cat_dog_model.keras
+data/
+!data/train/
+!data/train/cat/
+!data/train/dog/
+!data/validation/
+!data/validation/cat/
+!data/validation/dog/
