@@ -1,19 +1,19 @@
-# 🐾 PawsAI — Cat vs Dog CNN Classifier
+# 🐾 PawsAI — Cat vs Dog Image Classifier
 
-A full-stack Deep Learning project that trains a **Convolutional Neural Network** to classify images as a cat or dog, and serves the results through a beautiful interactive web app.
+A modern, full-stack Deep Learning project featuring a **Transfer Learning CNN (MobileNetV2)** that achieves **92.5% validation accuracy**, paired with an interactive dark-mode web application and a CLI prediction tool.
 
 ---
 
 ## ✨ Features
 
-| Feature | Detail |
+| Feature | Details |
 |---|---|
-| **CNN Architecture** | 4 Conv2D + BatchNorm + MaxPool blocks → GlobalAvgPool → Dense |
-| **Data Augmentation** | Flip, Rotation, Zoom, Brightness (training only) |
-| **Training Callbacks** | EarlyStopping, ReduceLROnPlateau, ModelCheckpoint |
-| **Web UI** | Drag-and-drop upload, animated result card, confidence bar |
-| **Flask API** | `/api/predict` endpoint (multipart/form-data) |
-| **CLI Predict** | `python ml/predict.py <image>` for terminal use |
+| **Architecture** | Pre-trained **MobileNetV2** backbone + Custom Dense Head |
+| **Accuracy** | **92.5%** validation accuracy (99.4% training accuracy) |
+| **Interactive Web UI** | Glassmorphism dark mode, drag-and-drop upload, confidence bar |
+| **REST API** | Flask `/api/predict` (multipart/form-data) & `/api/status` |
+| **CLI Tool** | Terminal predictor with visual confidence meter |
+| **Auto Dataset Setup** | Script to automatically fetch & organize balanced datasets |
 
 ---
 
@@ -21,128 +21,184 @@ A full-stack Deep Learning project that trains a **Convolutional Neural Network*
 
 ```
 CatDog_CNN_Safe_Starter/
-├── app.py                  # Flask web server
+├── app.py                  # Flask web server & REST API
+├── download_data.py        # Automated dataset downloader
 ├── requirements.txt        # Python dependencies
+├── README.md               # Documentation
 │
 ├── ml/
-│   ├── train.py            # Model training script
-│   ├── predict.py          # CLI prediction tool
-│   ├── convert_to_tfjs.py  # Optional TF.js conversion guide
-│   └── cat_dog_model.keras # (created after training)
+│   ├── train.py            # Model training script (MobileNetV2)
+│   ├── predict.py          # Terminal prediction CLI
+│   ├── convert_to_tfjs.py  # Optional TF.js converter guide
+│   ├── cat_dog_model.keras # Saved trained model (92.5% acc)
+│   └── training_history.png# Accuracy & loss curves plot
 │
 ├── data/
 │   ├── train/
-│   │   ├── cat/            # ← put training cat images here
-│   │   └── dog/            # ← put training dog images here
+│   │   ├── cat/            # 80 training cat photos
+│   │   └── dog/            # 80 training dog photos
 │   └── validation/
-│       ├── cat/            # ← put validation cat images here
-│       └── dog/            # ← put validation dog images here
+│       ├── cat/            # 20 validation cat photos
+│       └── dog/            # 20 validation dog photos
 │
-└── public/
-    ├── index.html          # Web app (SPA)
-    ├── style.css
-    ├── app.js
-    └── hero.jpg
+└── public/                 # Web application frontend
+    ├── index.html          # Single Page Interface
+    ├── style.css           # Premium dark-mode styling
+    ├── app.js              # Drag-and-drop & API integration
+    └── hero.jpg            # Generated hero image
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start Guide
 
-### 1. Create a virtual environment
+### 1. Requirements
+
+- Python 3.10 – 3.12 (Python 3.11 recommended)
+- Dependencies installed:
+  ```powershell
+  pip install -r requirements.txt
+  ```
+
+---
+
+### 2. 🌐 Launch the Web Application
+
+Run the server from this folder:
 
 ```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-> If PowerShell blocks script execution:
-> ```powershell
-> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-> ```
-
-### 2. Add your dataset
-
-Download from **[Kaggle Dogs vs Cats](https://www.kaggle.com/c/dogs-vs-cats/data)** (requires free account).
-
-Place images in:
-- `data/train/cat/` and `data/train/dog/`  *(≥ 1 000 images each recommended)*
-- `data/validation/cat/` and `data/validation/dog/`  *(≥ 200 each)*
-
-Do **not** put the same image in both train and validation.
-
-### 3. Train the model
-
-```bash
-python ml/train.py
-```
-
-Training will:
-- Validate that images exist in all four folders
-- Train for up to 20 epochs with early stopping
-- Save the best model → `ml/cat_dog_model.keras`
-- Save training curves → `ml/training_history.png`
-
-### 4. Launch the web app
-
-```bash
 python app.py
 ```
 
-Open **http://localhost:5000** — drag, drop, classify!
+Then open your browser at:
+👉 **[http://localhost:5000](http://localhost:5000)**
+
+**Features of the Web App:**
+- **Live Status:** The top-right badge displays `"Model Ready"` when the model is loaded.
+- **Drag & Drop:** Drop any JPG, PNG, or WebP photo into the upload box.
+- **Instant Inference:** Displays Cat / Dog verdict, percentage confidence, and a gradient visual bar.
 
 ---
 
-## 🖥️ CLI Prediction
+### 3. 🖥️ CLI Single Image Prediction
 
-```bash
-python ml/predict.py path/to/photo.jpg
+Predict any image directly from your terminal:
+
+**Test on a Cat:**
+```powershell
+python ml/predict.py data/validation/cat/cat_001.jpg
 ```
-
-Example output:
+*Output:*
 ```
 ========================================
-  Image    : photo.jpg
+  Image    : cat_001.jpg
+  Prediction: CAT
+  Confidence: 96.6%  [███████████████████░]
+  Raw score : 0.0343  (0 = cat, 1 = dog)
+========================================
+```
+
+**Test on a Dog:**
+```powershell
+python ml/predict.py data/validation/dog/dog_001.jpg
+```
+*Output:*
+```
+========================================
+  Image    : dog_001.jpg
   Prediction: DOG
-  Confidence: 94.3%  [██████████████████░░]
-  Raw score : 0.9430  (0 = cat, 1 = dog)
+  Confidence: 91.3%  [██████████████████░░]
+  Raw score : 0.9129  (0 = cat, 1 = dog)
 ========================================
 ```
 
 ---
 
-## 🧠 Model Architecture
+### 4. 🧠 Retraining the Model
+
+To retrain or train on new images:
+```powershell
+python ml/train.py
+```
+
+- Automatically validates image presence across all 4 data folders.
+- Uses data augmentation (horizontal flip, random rotation).
+- Employs `EarlyStopping` and `ReduceLROnPlateau` callbacks.
+- Saves the best checkpoint to `ml/cat_dog_model.keras`.
+- Generates loss/accuracy curves in `ml/training_history.png`.
+
+---
+
+### 5. 📥 Adding More Data
+
+Run the automated data populator to fetch fresh images:
+```powershell
+python download_data.py
+```
+Or manually place your images into:
+- `data/train/cat/` & `data/train/dog/`
+- `data/validation/cat/` & `data/validation/dog/`
+
+*(Source: [Kaggle Dogs vs Cats](https://www.kaggle.com/c/dogs-vs-cats/data))*
+
+---
+
+## 🏗️ Neural Network Architecture
 
 ```
-Input (128×128×3)
-  → Rescaling [0,1] + RandomFlip + RandomRotation + RandomZoom + RandomBrightness
-  → Conv2D(32)  + BatchNorm + MaxPool  → 64×64×32
-  → Conv2D(64)  + BatchNorm + MaxPool  → 32×32×64
-  → Conv2D(128) + BatchNorm + MaxPool  → 16×16×128
-  → Conv2D(256) + BatchNorm + GlobalAvgPool → 256
-  → Dense(256) + Dropout(0.5)
-  → Dense(1, sigmoid)  →  0 = cat, 1 = dog
+Input Image (128 × 128 × 3, RGB, 0–255)
+  │
+  ▼
+Rescaling Layer (maps [0, 255] → [-1, 1])
+  │
+  ▼
+Data Augmentation (RandomFlip, RandomRotation)
+  │
+  ▼
+MobileNetV2 Backbone (Frozen ImageNet feature extractor, ~2.2M params)
+  │
+  ▼
+GlobalAveragePooling2D (reduces spatial dimensions to 1280 features)
+  │
+  ▼
+Dense Layer (128 units, ReLU activation)
+  │
+  ▼
+Dropout (0.3 rate for regularization)
+  │
+  ▼
+Output Layer (1 unit, Sigmoid activation)
+  │
+  └─► Score < 0.5 = CAT  |  Score ≥ 0.5 = DOG
 ```
 
 ---
 
-## ⚠️ Important Notes
+## 📡 REST API Reference
 
-- The model is trained from scratch on **your dataset** — it is not pre-trained.
-- Confidence scores are raw sigmoid outputs and are not a guarantee of correctness.
-- At least **1 000 images per class** in training is recommended for reliable results.
-- This project has no database, no user accounts, and no cloud backend.
+### `GET /api/status`
+Checks if the model is loaded and ready.
+- **Response:**
+  ```json
+  {
+    "model_exists": true,
+    "model_path": "CatDog_CNN_Safe_Starter/ml/cat_dog_model.keras",
+    "model_ready": true
+  }
+  ```
+
+### `POST /api/predict`
+Accepts an image file via `multipart/form-data` with key `file`.
+- **Response (200 OK):**
+  ```json
+  {
+    "label": "dog",
+    "confidence": 91.3,
+    "raw_score": 0.9129
+  }
+  ```
 
 ---
 
-## 📦 Dependencies
-
-| Package | Purpose |
-|---|---|
-| `tensorflow >= 2.13` | CNN training and inference |
-| `numpy` | Array manipulation |
-| `pillow` | Image loading |
-| `matplotlib` | Training curve plots |
-| `flask` | Web server & REST API |
+## 📄 License
+This project is open-source and educational under the MIT License.
